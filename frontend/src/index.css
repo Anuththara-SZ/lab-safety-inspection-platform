@@ -19,3 +19,28 @@
   aside, .no-print { display: none !important; }
   main { padding: 0 !important; }
 }
+
+/* ---------- Animated auth screens ---------- */
+@keyframes floaty { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-18px) rotate(6deg); } }
+@keyframes rise { 0% { transform: translateY(0) scale(.6); opacity: 0; } 15% { opacity: .55; } 100% { transform: translateY(-110vh) scale(1.1); opacity: 0; } }
+@keyframes blob { 0%,100% { transform: translate(0,0) scale(1); } 33% { transform: translate(40px,-30px) scale(1.15); } 66% { transform: translate(-30px,30px) scale(.9); } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes tick { 0% { opacity: 0; transform: translateY(8px); } 12%,88% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-8px); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes ping-soft { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.4); opacity: 0; } }
+
+.anim-floaty { animation: floaty var(--dur, 7s) ease-in-out infinite; animation-delay: var(--delay, 0s); }
+.anim-rise { animation: rise var(--dur, 14s) linear infinite; animation-delay: var(--delay, 0s); }
+.anim-blob { animation: blob var(--dur, 18s) ease-in-out infinite; }
+.anim-fadeup { animation: fadeUp .7s ease-out both; animation-delay: var(--delay, 0s); }
+.anim-tick { animation: tick 3s ease-in-out both; }
+.anim-spin { animation: spin .8s linear infinite; }
+.anim-ping { animation: ping-soft 1.8s ease-out infinite; }
+.parallax { transform: translate3d(calc(var(--mx, 0) * var(--depth, 10) * 1px), calc(var(--my, 0) * var(--depth, 10) * 1px), 0); transition: transform .25s ease-out; }
+.glass { background: rgba(255,255,255,.92); backdrop-filter: blur(14px); }
+.auth-grid { background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 44px 44px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-floaty, .anim-rise, .anim-blob, .anim-fadeup, .anim-tick, .anim-ping { animation: none !important; }
+  .parallax { transition: none; transform: none; }
+}
