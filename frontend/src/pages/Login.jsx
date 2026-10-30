@@ -1,9 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2, Lock, Mail, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { errMsg } from '../api';
-import { Alert } from '../components/ui';
 import AuthShell from '../components/AuthShell';
+import AuthField from '../components/AuthField';
+
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.2 } } };
+const item = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.4 } } };
+
+const DEMO = [
+  ['Admin', 'admin@lab.com', 'Admin@123'],
+  ['Inspector', 'inspector@lab.com', 'Inspector@123'],
+  ['Technician', 'tech@lab.com', 'Tech@123'],
+];
 
 export default function Login() {
   const { login } = useAuth();
@@ -17,78 +28,122 @@ export default function Login() {
     setError('');
     setBusy(true);
     try {
-      await login(form.email, form.password);
+      await login(form.email, form.password); // real API call; App redirects once the user is set
     } catch (err) {
       setError(errMsg(err));
       setBusy(false);
     }
   };
 
-  const demo = [
-    ['Admin', 'admin@lab.com', 'Admin@123'],
-    ['Inspector', 'inspector@lab.com', 'Inspector@123'],
-    ['Technician', 'tech@lab.com', 'Tech@123'],
-  ];
-
   return (
     <AuthShell>
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-emerald-500 text-white shadow-lg">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />
-            <path d="M8.5 12l2.5 2.5L16 9.5" />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900">Welcome back</h2>
-          <p className="text-sm text-slate-500">Sign in to Lab Safety Platform</p>
-        </div>
-      </div>
-
-      <Alert>{error}</Alert>
-
-      <form onSubmit={submit} className="space-y-4">
-        <div>
-          <label className="label">Email</label>
-          <input className="input" type="email" required autoComplete="email" placeholder="you@university.lk" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        </div>
-        <div>
-          <label className="label">Password</label>
-          <div className="relative">
-            <input className="input pr-16" type={show ? 'text' : 'password'} required autoComplete="current-password" placeholder="Your password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-            <button type="button" onClick={() => setShow(!show)} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-brand-600 hover:underline">
-              {show ? 'Hide' : 'Show'}
-            </button>
+      <motion.div variants={container} initial="hidden" animate="show">
+        <motion.div variants={item} className="mb-7 flex items-center gap-3.5">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-blue-500 to-emerald-500 text-white shadow-lg shadow-blue-500/30">
+            <ShieldCheck size={26} aria-hidden="true" />
+          </span>
+          <div>
+            <h2 className="text-2xl font-extrabold text-slate-900">Welcome back</h2>
+            <p className="text-sm text-slate-600">Sign in to Lab Safety Platform</p>
           </div>
-        </div>
-        <button className="btn-primary w-full bg-gradient-to-r from-brand-500 to-indigo-600 py-2.5 shadow-lg shadow-blue-500/30 hover:scale-[1.01]" disabled={busy}>
-          {busy ? (
-            <>
-              <span className="anim-spin inline-block h-4 w-4 rounded-full border-2 border-white/40 border-t-white" /> Signing in...
-            </>
-          ) : (
-            'Sign in'
-          )}
-        </button>
-      </form>
+        </motion.div>
 
-      <p className="mt-4 text-center text-sm text-slate-500">
-        No account?{' '}
-        <Link to="/register" className="font-medium text-brand-600 hover:underline">
-          Register
-        </Link>
-      </p>
-
-      <div className="mt-6 border-t pt-4">
-        <p className="mb-2 text-xs font-medium text-slate-500">Quick demo login (fills the form)</p>
-        <div className="flex flex-wrap gap-2">
-          {demo.map(([label, email, password]) => (
-            <button key={label} type="button" className="btn-secondary btn-sm hover:-translate-y-0.5" onClick={() => setForm({ email, password })}>
-              {label}
-            </button>
-          ))}
+        <div aria-live="assertive">
+          <AnimatePresence initial={false}>
+            {error && (
+              <motion.div
+                key={error}
+                role="alert"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto', x: [0, -8, 8, -5, 5, 0] }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.4 }}
+                className="mb-4 overflow-hidden"
+              >
+                <div className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-3 text-sm text-rose-800">
+                  <AlertCircle size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+                  <span>{error}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
+
+        <form onSubmit={submit} noValidate={false} aria-busy={busy}>
+          <fieldset disabled={busy} className="space-y-4 border-0 p-0">
+            <motion.div variants={item}>
+              <AuthField id="email" label="Email" icon={Mail} type="email" required autoComplete="email" placeholder="you@university.lk" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            </motion.div>
+            <motion.div variants={item}>
+              <AuthField
+                id="password"
+                label="Password"
+                icon={Lock}
+                type={show ? 'text' : 'password'}
+                required
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                trailing={
+                  <button type="button" onClick={() => setShow(!show)} aria-label={show ? 'Hide password' : 'Show password'} aria-pressed={show} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                    {show ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                }
+              />
+            </motion.div>
+
+            <motion.div variants={item}>
+              <motion.button
+                type="submit"
+                whileHover={busy ? undefined : { y: -2 }}
+                whileTap={busy ? undefined : { scale: 0.98 }}
+                className="relative w-full overflow-hidden rounded-xl py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-300 disabled:cursor-wait"
+                style={{ background: 'linear-gradient(135deg,#2563eb,#4f46e5 60%,#0ea5e9)' }}
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  {busy ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" aria-hidden="true" /> Signing you in...
+                    </>
+                  ) : (
+                    <>
+                      Sign in <ArrowRight size={18} aria-hidden="true" />
+                    </>
+                  )}
+                </span>
+                {busy && <span className="shimmer-bar" aria-hidden="true" />}
+              </motion.button>
+            </motion.div>
+          </fieldset>
+        </form>
+
+        <motion.p variants={item} className="mt-5 text-center text-sm text-slate-600">
+          No account?{' '}
+          <Link to="/register" className="font-semibold text-blue-700 hover:underline focus:outline-none focus-visible:underline">
+            Create one
+          </Link>
+        </motion.p>
+
+        <motion.div variants={item} className="mt-6 border-t border-slate-200 pt-4">
+          <p className="mb-2.5 text-xs font-semibold text-slate-600">Quick demo login (fills the form)</p>
+          <div className="flex flex-wrap gap-2">
+            {DEMO.map(([label, email, password]) => (
+              <motion.button
+                key={label}
+                type="button"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.96 }}
+                disabled={busy}
+                onClick={() => setForm({ email, password })}
+                className="rounded-full border border-slate-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-400 hover:text-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50"
+              >
+                {label}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+      </motion.div>
     </AuthShell>
   );
 }
